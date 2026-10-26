@@ -1,0 +1,308 @@
+<title>The Federal Pandemic Record</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;800&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a working explorer. Masthead, four views on a tab bar, a month histogram
+   as the spine of the documents view, ledger rows below. Public Sans is the US
+   government's own typeface (USWDS); Plex Mono carries Wayback timestamps. */
+:root {
+  --bg: #f5f7f9;
+  --surface: #ffffff;
+  --ink: #17202b;
+  --muted: #5b6876;
+  --rule: #d9dfe6;
+  --accent: #1d5c8c;
+  --accent-soft: #dbe7f1;
+  --event: #a86a12;
+  --placeholder: #b13f36;
+  --placeholder-soft: #f6dedb;
+  --display: "Public Sans", "Helvetica Neue", Arial, sans-serif;
+  --body: "Public Sans", "Helvetica Neue", Arial, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #11161c; --surface: #19212a; --ink: #e5eaf0; --muted: #98a4b1; --rule: #2c3743;
+  --accent: #7fb3de; --accent-soft: #1f3447; --event: #e0a64a; --placeholder: #ec7d72;
+  --placeholder-soft: #3d2120; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #11161c; --surface: #19212a; --ink: #e5eaf0; --muted: #98a4b1; --rule: #2c3743;
+  --accent: #7fb3de; --accent-soft: #1f3447; --event: #e0a64a; --placeholder: #ec7d72;
+  --placeholder-soft: #3d2120; color-scheme: dark }
+
+* { box-sizing: border-box }
+body { background: var(--bg); color: var(--ink); font: 15px/1.5 var(--body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 48px }
+.wrap { max-width: 1080px; margin: 0 auto }
+a { color: var(--accent) }
+a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px }
+
+.mock { margin: 16px 0 0; padding: 8px 12px; border: 1px dashed var(--event); color: var(--event);
+  font: 500 12px/1.4 var(--mono); border-radius: 4px }
+header.mast { padding-block: 28px 8px }
+.eyebrow { font: 600 12px/1 var(--body); letter-spacing: .08em; text-transform: uppercase; color: var(--muted) }
+h1 { font: 800 clamp(28px, 5vw, 44px)/1.05 var(--display); margin: 8px 0 10px; letter-spacing: -.01em; text-wrap: balance }
+.lede { max-width: 64ch; color: var(--muted); margin: 0 }
+.lede b { color: var(--ink); font-weight: 600 }
+
+nav.tabs { display: flex; gap: 4px; flex-wrap: wrap; border-bottom: 1px solid var(--rule); margin-top: 24px;
+  position: sticky; top: env(safe-area-inset-top, 0px); background: var(--bg); z-index: 5 }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg) }
+nav.tabs a { padding: 10px 14px; text-decoration: none; color: var(--muted); font-weight: 600; border-bottom: 3px solid transparent; margin-bottom: -1px }
+nav.tabs a[aria-current="page"] { color: var(--ink); border-color: var(--accent) }
+section.view { padding-top: 20px }
+
+/* histogram */
+.hist { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 14px 14px 8px; overflow-x: auto }
+.hist svg { display: block; width: 100%; min-width: 560px; height: auto }
+.hist .cap { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; font-size: 13px; color: var(--muted); margin-bottom: 6px }
+.hist .cap b { color: var(--ink) }
+.bar { fill: var(--accent); cursor: pointer }
+.bar.dim { fill: var(--accent-soft) }
+.bar:hover { fill: var(--ink) }
+.axis { fill: var(--muted); font: 11px var(--mono) }
+.grid { stroke: var(--rule) }
+.ev line { stroke: var(--event); stroke-dasharray: 2 3 }
+.ev circle { fill: var(--event) }
+.ev text { fill: var(--event); font: 600 10px var(--body) }
+
+.controls { display: grid; grid-template-columns: 220px 1fr; gap: 20px; margin-top: 20px }
+@media (max-width: 760px) { .controls { grid-template-columns: 1fr } }
+.facets { display: flex; flex-direction: column; gap: 16px }
+.facet h3 { font: 600 12px/1 var(--body); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 0 0 8px }
+.facet label { display: flex; justify-content: space-between; gap: 8px; padding: 3px 0; cursor: pointer; font-size: 14px }
+.facet label span:last-child, .num { font: 12px var(--mono); color: var(--muted); font-variant-numeric: tabular-nums }
+.search { width: 100%; padding: 10px 12px; font: inherit; border: 1px solid var(--rule); border-radius: 6px; background: var(--surface); color: var(--ink) }
+.status { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-size: 13px; color: var(--muted); margin: 12px 0 6px }
+.chip-clear { border: 0; background: none; color: var(--accent); font: inherit; cursor: pointer; padding: 0 }
+
+ol.docs { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--rule); min-width: 0 }
+ol.docs li { display: grid; grid-template-columns: 92px 1fr auto; gap: 4px 14px; padding: 10px 2px; border-bottom: 1px solid var(--rule); align-items: baseline }
+.when { font: 12px var(--mono); color: var(--muted); white-space: nowrap }
+.ttl { min-width: 0; overflow-wrap: anywhere }
+.ttl a { color: var(--ink); text-decoration: none; font-weight: 500 }
+.ttl a:hover { text-decoration: underline; color: var(--accent) }
+.meta { grid-column: 2 / 4; display: flex; gap: 6px; flex-wrap: wrap; font-size: 12px; color: var(--muted) }
+.ag { font: 600 11px/1 var(--body); letter-spacing: .04em; padding: 4px 6px; border-radius: 3px; background: var(--accent-soft); color: var(--accent); white-space: nowrap }
+.langs { cursor: help; border-bottom: 1px dotted var(--muted) }
+.more { margin: 16px auto 0; display: block; padding: 10px 18px; border: 1px solid var(--rule); background: var(--surface); color: var(--ink); font: 600 14px var(--body); border-radius: 6px; cursor: pointer }
+@media (max-width: 520px) { ol.docs li { grid-template-columns: 1fr } .meta { grid-column: 1 } ol.docs li > .when { order: -1 } }
+
+/* pages over time */
+.legend { display: flex; gap: 18px; flex-wrap: wrap; font-size: 13px; color: var(--muted); margin-bottom: 12px }
+.legend i { display: inline-block; width: 12px; height: 10px; margin-right: 6px; vertical-align: -1px; border-radius: 2px }
+.prow { border-top: 1px solid var(--rule) }
+.prow summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: minmax(0, 1fr) 260px 110px; gap: 14px; align-items: center; padding: 10px 2px }
+.prow summary::-webkit-details-marker { display: none }
+@media (max-width: 720px) { .prow summary { grid-template-columns: 1fr } }
+.purl { font: 12px var(--mono); color: var(--muted); overflow-wrap: anywhere }
+.pname { font-weight: 600 }
+.spark { width: 100%; height: 44px; display: block }
+.spark .v { fill: var(--accent) }
+.spark .ph { fill: var(--placeholder-soft) }
+.spark .kb { fill: none; stroke: var(--ink); stroke-width: 1.4 }
+.flag { font: 600 11px var(--body); color: var(--placeholder); }
+.pstat { font: 12px var(--mono); color: var(--muted); text-align: right }
+.months { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 4px 16px; padding: 4px 2px 16px; font: 12px var(--mono) }
+.months div { display: flex; justify-content: space-between; gap: 8px }
+.months .isph { color: var(--placeholder) }
+
+/* archive.org + about */
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px }
+.card { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; min-width: 0 }
+.card h3 { margin: 0; font: 600 16px/1.3 var(--body) }
+.card .id { font: 12px var(--mono); color: var(--muted); overflow-wrap: anywhere }
+.card p { margin: 0; font-size: 14px; color: var(--muted) }
+.big { font: 800 22px/1 var(--display); font-variant-numeric: tabular-nums }
+.prose { max-width: 66ch }
+.prose h2 { font: 800 22px/1.2 var(--display); margin: 28px 0 8px; text-wrap: balance }
+.prose h2:first-child { margin-top: 0 }
+code { font: 13px var(--mono); background: var(--accent-soft); padding: 1px 4px; border-radius: 3px }
+@media (prefers-reduced-motion: no-preference) { .bar { transition: fill .12s } }
+</style>
+
+<div class="wrap">
+  <p class="mock">MOCKUP · built from a real sample: CDX harvested 26 Oct 2026 for CDC downloads, ED, NIH and Biden presidential actions. Other agencies, the Trump White House and the dates of events are not in yet.</p>
+  <header class="mast">
+    <div class="eyebrow">Internet Archive · Democracy's Library</div>
+    <h1>The Federal Pandemic Record</h1>
+    <p class="lede">COVID-19 as the U.S. federal government told it on its own websites, from <b>December 2019</b> to the end of the Public Health Emergency on <b>11 May 2023</b>, preserved by the Wayback Machine.</p>
+  </header>
+
+  <nav class="tabs" aria-label="Views">
+    <a href="#documents" data-v="documents">Documents</a>
+    <a href="#pages" data-v="pages">Pages over time</a>
+    <a href="#archive" data-v="archive">On archive.org</a>
+    <a href="#about" data-v="about">About</a>
+  </nav>
+
+  <section class="view" id="v-documents">
+    <div class="hist">
+      <div class="cap"><span><b id="h-total">0</b> documents by month first captured. Click a month to filter.</span><span>◆ events: draft dates, not yet verified</span></div>
+      <svg id="hist" viewBox="0 0 1000 230" role="img" aria-label="Documents per month"></svg>
+    </div>
+    <div class="controls">
+      <aside class="facets" id="facets"></aside>
+      <div style="min-width:0">
+        <input id="q" class="search" type="search" placeholder="Search titles: masks, schools, quarantine…" aria-label="Search titles">
+        <div class="status"><span id="count"></span><button class="chip-clear" id="clear" hidden>Clear filters</button></div>
+        <ol class="docs" id="docs"></ol>
+        <button class="more" id="more" hidden>Show more</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="view" id="v-pages" hidden>
+    <p class="lede" style="margin-bottom:14px">Key federal pages, month by month. Bars count versions, meaning a change in digest; the line is the median capture size. Dynamic markup makes the digest change without the text changing, so many versions do not mean much rewriting. A month shaded red is a <b>placeholder</b>: CDC moved the page, and the old address kept answering 200 with a redirect of about 1 KB.</p>
+    <div class="legend"><span><i style="background:var(--accent)"></i>versions per month</span><span><i style="background:var(--ink);height:2px;vertical-align:3px"></i>median size</span><span><i style="background:var(--placeholder-soft)"></i>placeholder month (under 15% of the page's peak size)</span></div>
+    <div id="pages"></div>
+  </section>
+
+  <section class="view" id="v-archive" hidden>
+    <p class="lede" style="margin-bottom:14px">Related collections already on archive.org. Counts are from the public search index on 26 Oct 2026, so each is a floor.</p>
+    <div class="cards" id="cards"></div>
+  </section>
+
+  <section class="view prose" id="v-about" hidden>
+    <h2>Every document opens as a document</h2>
+    <p>Every Wayback link here should replay a PDF or an official issuance: an executive order, proclamation, memorandum, declaration or statement. A hub page, a search page, a 404 shell or a redirect stub does not count. Translations of one document fold into one record that lists its languages. The rule gets checked on a random sample of replays before any count is quoted.</p>
+    <h2>Dates are upper bounds</h2>
+    <p>Most documents are dated by the first capture the Wayback Machine made, so they show as <i>by March 2020</i> and not as a day. Only a date in the URL or in the document itself gets a day. Biden White House actions carry theirs in the URL.</p>
+    <h2>Moved pages turn into placeholders</h2>
+    <p>When CDC moved a page, the old address kept answering 200 with a small redirect page, and the crawler kept capturing it. <code>cloth-face-cover.html</code> was 50–57 KB from April to June 2020 and about 1 KB from July. The explorer marks those months and points to the page that replaced it.</p>
+    <h2>What this mockup leaves out</h2>
+    <p>The translation folding here is a first pass. It finds <span id="ab-cdc"></span>, against 1,294 in the Cowork survey, and some titles still carry a language token. Trump White House items need dating by exact-URL lookups before they can go in. HHS, PHE, DHS, CISA, FEMA and the rest are queued. The NIH and ED rows are unfiltered PDFs and still need a pass for the COVID topic and the opens-as-a-document rule.</p>
+  </section>
+</div>
+
+<script src="data.js"></script>
+<script>
+(() => {
+const M = window.MOCK, D = M.docs;
+const MONTHS = []; for (let y = 2019, m = 12; y < 2023 || (y === 2023 && m <= 5); m++) { if (m > 12) { m = 1; y++ } if (y === 2023 && m > 5) break; MONTHS.push(`${y}-${String(m).padStart(2, "0")}`) }
+const MN = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const fmtM = m => `${MN[+m.slice(5) - 1]} ${m.slice(0, 4)}`;
+const fmtN = n => n.toLocaleString("en-US");
+const EVENTS = [
+  ["2020-01", "PHE declared"], ["2020-03", "National emergency"], ["2020-03", "CARES Act"],
+  ["2020-04", "Cloth face coverings"], ["2020-12", "First vaccine EUA"], ["2021-01", "Biden national strategy"],
+  ["2021-03", "American Rescue Plan"], ["2021-05", "Masks off if vaccinated"], ["2021-07", "Masks back indoors"],
+  ["2021-12", "Isolation shortened"], ["2022-01", "COVIDtests.gov opens"], ["2022-08", "Streamlined guidance"],
+  ["2023-04", "National emergency ends"], ["2023-05", "PHE ends"]];
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+
+/* ---- documents ---- */
+const st = { agency: new Set(), type: new Set(), translated: false, month: null, q: "", shown: 60 };
+const typeOf = d => d.type;
+function match(d, skip) {
+  if (skip !== "agency" && st.agency.size && !st.agency.has(d.agency)) return false;
+  if (skip !== "type" && st.type.size && !st.type.has(typeOf(d))) return false;
+  if (skip !== "translated" && st.translated && !d.langs.length) return false;
+  if (skip !== "month" && st.month && d.month !== st.month) return false;
+  if (st.q) { const t = (d.title + " " + d.langs.join(" ")).toLowerCase(); if (!st.q.split(/\s+/).every(w => t.includes(w))) return false }
+  return true;
+}
+function facet(title, key, values) {
+  const counts = {}; D.forEach(d => { if (match(d, key)) counts[values(d)] = (counts[values(d)] || 0) + 1 });
+  const all = [...new Set(D.map(values))].sort((a, b) => (counts[b] || 0) - (counts[a] || 0));
+  return `<div class="facet"><h3>${title}</h3>${all.map(v => `<label><span><input type="checkbox" id="f-${key}-${esc(v).replace(/\W/g, "")}" data-k="${key}" value="${esc(v)}" ${st[key].has(v) ? "checked" : ""}> ${esc(v)}</span><span>${fmtN(counts[v] || 0)}</span></label>`).join("")}</div>`;
+}
+function renderFacets() {
+  const tr = D.filter(d => match(d, "translated") && d.langs.length).length;
+  document.getElementById("facets").innerHTML = facet("Agency", "agency", d => d.agency) + facet("Document type", "type", typeOf) +
+    `<div class="facet"><h3>Languages</h3><label><span><input type="checkbox" id="f-tr" data-k="translated" ${st.translated ? "checked" : ""}> Has translations</span><span>${fmtN(tr)}</span></label></div>`;
+}
+function renderHist() {
+  const counts = MONTHS.map(m => D.filter(d => d.month === m && match(d, "month")).length);
+  const max = Math.max(1, ...counts), W = 1000, L = 40, R = 10, T = 54, B = 200, bw = (W - L - R) / MONTHS.length;
+  const nice = max > 200 ? 100 : max > 50 ? 25 : max > 20 ? 10 : 5, top = Math.ceil(max / nice) * nice, y = v => B - (v / top) * (B - T);
+  let s = "";
+  for (let v = 0; v <= top; v += nice) s += `<line class="grid" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text class="axis" x="${L - 6}" y="${y(v) + 4}" text-anchor="end">${v}</text>`;
+  counts.forEach((c, i) => {
+    const m = MONTHS[i], x = L + i * bw + 1;
+    s += `<rect class="bar${st.month && st.month !== m ? " dim" : ""}" data-m="${m}" x="${x}" y="${y(c)}" width="${bw - 2}" height="${B - y(c)}"><title>${fmtM(m)}: ${c}</title></rect>`;
+    if (m.endsWith("-01") || i === 0) s += `<text class="axis" x="${x}" y="${B + 16}">${m.endsWith("-01") ? m.slice(0, 4) : "Dec"}</text>`;
+  });
+  const seen = {};
+  EVENTS.forEach(([m, label]) => {
+    const i = MONTHS.indexOf(m); if (i < 0) return; const n = seen[m] = (seen[m] || 0) + 1;
+    const x = L + i * bw + bw / 2, ly = 12 + ((Object.keys(seen).length - 1) % 3) * 13 + (n - 1) * 13;
+    s += `<g class="ev"><line x1="${x}" x2="${x}" y1="${ly + 3}" y2="${B}"/><circle cx="${x}" cy="${ly}" r="3"/><text x="${x + 5}" y="${ly + 3.5}"${i > MONTHS.length - 8 ? ` text-anchor="end" dx="-10"` : ""}>${esc(label)}</text></g>`;
+  });
+  const svg = document.getElementById("hist"); svg.innerHTML = s;
+  svg.querySelectorAll(".bar").forEach(b => b.onclick = () => { st.month = st.month === b.dataset.m ? null : b.dataset.m; st.shown = 60; render() });
+  document.getElementById("h-total").textContent = fmtN(counts.reduce((a, b) => a + b, 0));
+}
+function renderDocs() {
+  const rows = D.filter(d => match(d));
+  const filt = st.agency.size || st.type.size || st.translated || st.month || st.q;
+  document.getElementById("count").textContent = `${fmtN(rows.length)} of ${fmtN(D.length)} documents${st.month ? ` · ${fmtM(st.month)}` : ""}`;
+  document.getElementById("clear").hidden = !filt;
+  document.getElementById("docs").innerHTML = rows.slice(0, st.shown).map(d => {
+    const when = d.day ? new Date(d.day + "T12:00").toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" }) : `by ${fmtM(d.month)}`;
+    const langs = d.langs.length ? `<span class="langs" title="${esc(d.langs.join(", "))}">+${d.langs.length} language${d.langs.length > 1 ? "s" : ""}</span>` : "";
+    return `<li><span class="when">${when}</span><span class="ttl"><a href="${esc(d.url)}" target="_blank" rel="noopener">${esc(d.title)}</a></span><span class="ag">${esc(d.agency)}</span><span class="meta"><span>${esc(d.type)}</span>${langs ? "·" + langs : ""}</span></li>`;
+  }).join("");
+  const more = document.getElementById("more"); more.hidden = rows.length <= st.shown;
+  more.textContent = `Show more (${fmtN(rows.length - st.shown)} left)`;
+}
+function render() { renderFacets(); renderHist(); renderDocs() }
+document.getElementById("facets").addEventListener("change", e => {
+  const k = e.target.dataset.k; if (!k) return;
+  if (k === "translated") st.translated = e.target.checked; else e.target.checked ? st[k].add(e.target.value) : st[k].delete(e.target.value);
+  st.shown = 60; render();
+});
+document.getElementById("q").addEventListener("input", e => { st.q = e.target.value.trim().toLowerCase(); st.shown = 60; render() });
+document.getElementById("more").onclick = () => { st.shown += 100; renderDocs() };
+document.getElementById("clear").onclick = () => { st.agency.clear(); st.type.clear(); st.translated = false; st.month = null; st.q = ""; document.getElementById("q").value = ""; render() };
+
+/* ---- pages over time ---- */
+const NAMES = { cdc_home: "CDC COVID-19 home", cdc_masks: "Cloth face coverings", cdc_masks2: "About face coverings", cdc_spread: "How COVID spreads",
+  cdc_quarantine: "Quarantine", cdc_quarantine2: "Quarantine and isolation", cdc_symptoms: "Symptoms", cdc_cases: "Cases in the U.S.",
+  cdc_uptodate: "Stay up to date with vaccines", cdc_schools0: "Schools: operational strategy", cdc_schools: "K-12 guidance", cdc_travel: "Travelers",
+  cdc_risk: "People at increased risk", coronavirus_gov: "coronavirus.gov", covid_gov: "covid.gov", covidtests_gov: "covidtests.gov",
+  vaccines_gov: "vaccines.gov", phe_decl: "PHE declaration", cisa_covid: "CISA coronavirus", fema_covid: "FEMA coronavirus" };
+function spark(p) {
+  const W = 260, H = 44, bw = W / MONTHS.length, byM = Object.fromEntries(p.months.map(x => [x.m, x]));
+  const vmax = Math.max(...p.months.map(x => x.v)), kmax = p.peak || 1; let s = "", pts = [];
+  MONTHS.forEach((m, i) => { const x = byM[m]; if (!x) return;
+    if (x.ph) s += `<rect class="ph" x="${i * bw}" y="0" width="${bw}" height="${H}"/>`;
+    const h = Math.max(1, (x.v / vmax) * (H - 6)); s += `<rect class="v" x="${i * bw + .5}" y="${H - h}" width="${Math.max(1, bw - 1)}" height="${h}"/>`;
+    if (x.kb != null) pts.push(`${(i + .5) * bw},${H - 2 - (x.kb / kmax) * (H - 8)}`) });
+  return `<svg class="spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true">${s}<polyline class="kb" points="${pts.join(" ")}"/></svg>`;
+}
+document.getElementById("pages").innerHTML = M.pages.map(p => {
+  const ph = p.months.filter(x => x.ph); const name = NAMES[p.key] || p.url.split("/").filter(Boolean).pop().replace(/\.html?$/, "").replace(/-/g, " ");
+  const flag = ph.length ? `<span class="flag">placeholder from ${fmtM(ph[0].m)}</span>` : "";
+  const url = "https://" + p.url;
+  const rows = p.months.map((x, i) => { const prev = p.months[i - 1];
+    const diff = prev ? ` · <a href="https://web.archive.org/web/diff/${prev.ts}/${x.ts}/${url}" target="_blank" rel="noopener">diff</a>` : "";
+    return `<div class="${x.ph ? "isph" : ""}"><a href="https://web.archive.org/web/${x.ts}/${url}" target="_blank" rel="noopener">${fmtM(x.m)}</a><span>${x.v} v · ${x.kb ?? "–"} KB${diff}</span></div>` }).join("");
+  return `<details class="prow"><summary><span style="min-width:0"><div class="pname">${esc(name)} ${flag}</div><div class="purl">${esc(p.url)}</div></span>${spark(p)}<span class="pstat">${fmtN(p.versions)} versions<br>peak ${p.peak} KB</span></summary><div class="months">${rows}</div></details>`;
+}).join("");
+
+/* ---- archive.org ---- */
+const CARDS = [
+  ["Coronavirus (COVID-19)", "ArchiveIt-Collection-13721", "Archive-It, from the Federal Depository Library Program Web Archive (partner 593)."],
+  ["COVID.gov", "ArchiveIt-Collection-19129", "Archive-It, FDLP Web Archive."],
+  ["COVIDtests.gov", "ArchiveIt-Collection-18608", "Archive-It."],
+  ["David J. Sencer CDC Museum COVID-19 Collection Web Archive", "ArchiveIt-Collection-16018", "The CDC museum's own web archive."],
+  ["David J. Sencer CDC Museum COVID-19 Timeline Links", "ArchiveIt-Collection-20471", "The museum's timeline. A candidate backbone for the events track."],
+  ["White House Coronavirus Task Force briefings", "TV-CSPAN", "C-SPAN recordings in the TV News Archive, titled “Coronavirus Task Force”.", 145],
+  ["CDC YouTube channel", "cdc-youtube-channel", "All of CDC's videos, not only the COVID ones. A topic filter is still to do.", 6664],
+  ["COVID-19 Apps", "COVID-19_Apps", "Archived apps, including CDC's own.", 257],
+  ["U.S. Government Documents matching coronavirus or covid", "USGovernmentDocuments", "Keyword match inside the collection. Not yet read item by item.", 98],
+  ["State Executive Actions Related to the COVID-19 Pandemic", "ArchiveIt-Collection-15784", "States rather than federal. A companion collection, linked but not in the corpus."]];
+document.getElementById("cards").innerHTML = CARDS.map(([t, id, note, n]) => `<div class="card">${n ? `<div class="big">${fmtN(n)}<span class="num"> items</span></div>` : ""}<h3><a href="https://archive.org/details/${id}" target="_blank" rel="noopener">${esc(t)}</a></h3><div class="id">${id}</div><p>${note}</p></div>`).join("");
+document.getElementById("ab-cdc").textContent = `${fmtN(M.stats.cdc_docs)} CDC documents from ${fmtN(M.stats.cdc_files)} files`;
+
+/* ---- views ---- */
+const VIEWS = ["documents", "pages", "archive", "about"];
+function show(v) { if (!VIEWS.includes(v)) v = "documents";
+  VIEWS.forEach(x => document.getElementById("v-" + x).hidden = x !== v);
+  document.querySelectorAll("nav.tabs a").forEach(a => a.dataset.v === v ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current")) }
+document.querySelectorAll("nav.tabs a").forEach(a => a.onclick = e => { e.preventDefault(); show(a.dataset.v); try { history.replaceState(null, "", "#" + a.dataset.v) } catch (_) {} });
+render(); show(location.hash.slice(1));
+})();
+</script>
