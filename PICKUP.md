@@ -34,6 +34,18 @@ file it refers to.
   - Trump briefings: 208 against the survey's 195. The keyword list catches
     false positives such as "reopening the Washington Monument", so the list
     needs a read by hand either way.
+- **Step 4 is done.** `build/dates.py` looked up the first status-200 capture
+  of each of the 273 Trump White House items (65 actions, 208 briefings) at its
+  `www.whitehouse.gov` address, 26 Oct 2026: about 16 minutes on 2 workers, 9
+  network failures, all recovered on a re-run. Two items checked by hand: the national-emergency
+  proclamation is first captured 13 Mar 2020 and "15 Days to Slow the Spread"
+  16 Mar 2020, their issue dates. Result: **231 in the period**, peaking at
+  71 in March 2020. **35 outside the period**: keyword false positives,
+  dropping out on date as intended. Examples: the 2019 influenza-vaccine order,
+  2017-2019 Defense Production Act determinations, and unrelated task forces.
+  **7 have no capture**. Most are malformed mirror URLs (a stray `]`, a trailing
+  `-` or `.5`) whose clean address is also in the corpus. The harvest's cleaning
+  should probably drop them; not done yet.
 - Not run yet: the paged sources (`cdc-ncov`, `hhs-files`) and the `wp-content`
   mirrors, which run only when named with `--source`.
 - Still open: whether HTML issuances (statements, press releases) belong in the
