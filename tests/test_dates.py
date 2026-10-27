@@ -32,6 +32,25 @@ class ParseFirst(unittest.TestCase):
         self.assertEqual(dates.parse_first(""), {"status": "none"})
 
 
+class Settled(unittest.TestCase):
+    def test_one_empty_answer_is_asked_again(self):
+        self.assertFalse(dates.settled({"status": "none"}))
+        self.assertTrue(dates.settled({"status": "none", "asked": 2}))
+        self.assertTrue(dates.settled({"status": "found", "first_ts": "20200429133024"}))
+        self.assertFalse(dates.settled({"status": "error"}))
+        self.assertFalse(dates.settled({}))
+
+    def test_empty_then_found_is_found(self):
+        answers = iter(["", "20200429133024 https://www.whitehouse.gov/p/ TRT2\n"])
+        real = dates.ask_first
+        dates.ask_first = lambda url: dates.parse_first(next(answers))
+        try:
+            r = dates.first_capture("https://www.whitehouse.gov/p/", pause=0)
+        finally:
+            dates.ask_first = real
+        self.assertEqual((r["status"], r["first_ts"]), ("found", "20200429133024"))
+
+
 class Period(unittest.TestCase):
     def test_bounds(self):
         self.assertTrue(dates.in_period("20191201000000"))

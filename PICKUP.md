@@ -43,9 +43,27 @@ file it refers to.
   71 in March 2020. **35 outside the period**: keyword false positives,
   dropping out on date as intended. Examples: the 2019 influenza-vaccine order,
   2017-2019 Defense Production Act determinations, and unrelated task forces.
-  **7 have no capture**. Most are malformed mirror URLs (a stray `]`, a trailing
-  `-` or `.5`) whose clean address is also in the corpus. The harvest's cleaning
-  should probably drop them; not done yet.
+  Seven had no capture on that run; both causes are now fixed (next item).
+- **Mangled links are dropped, and an empty CDX answer is asked twice**
+  (26 Oct 2026). Of the 7 empty lookups, 4 were mirror URLs mangled by whatever
+  cited them (a stray `]`, a trailing `-`, `-.5`). Looking across every source
+  found 15 such records: those 4, plus 9 in PHE (trailing spaces, `&nbsp`,
+  JSON fragments, an Outlook safelink carrying a reader's email address) and
+  2 in HHS (`.pdf<`, `.pdf>`). `clean()` now cuts each back to the address it
+  was meant to be and drops it **only where that address is also in the
+  source**, so a mangled link that is the only trace of a file is kept. A
+  second real extension is not a tail: CDC's `...-sp.pdf.pdf` and `...-sp.pdf`
+  differ in digest and are 9 months apart, so both stay. Now **2,809
+  records**: Trump actions 64, not 65, because the survey's 65 counted the `]`
+  duplicate; Trump briefings 205; PHE 115; HHS `covid*` 65.
+  The other 3 empty lookups were not empty at all. Asked again, CDX gave a
+  capture for each, the same query three times out of three: CDX had answered
+  an empty 200 during the run. `dates.py` now asks twice, a pause apart,
+  before recording `none`, and re-asks any `none` from before that change.
+  Result: **all 269 items dated, 232 in the period, 37 outside**. The 2
+  added outside are Defense Production Act determinations first captured in
+  July 2019; the one added inside is the Paycheck Protection Program remarks,
+  29 Apr 2020.
 - Not run yet: the paged sources (`cdc-ncov`, `hhs-files`) and the `wp-content`
   mirrors, which run only when named with `--source`.
 - Still open: whether HTML issuances (statements, press releases) belong in the

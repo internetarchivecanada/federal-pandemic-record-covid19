@@ -71,6 +71,17 @@ KEYWORDS = re.compile(
 
 URL_DATE = re.compile(r"/(20\d\d)/(\d\d)/(\d\d)/")
 
+# Links mangled by whatever page cited them, and captured anyway: a bracket or
+# quote from the surrounding markup, a trailing space or hyphen, an Outlook
+# safelink tail, a JSON fragment, "-.5". Each is cut back to what it was meant
+# to be, and dropped only where that address is in the source too: a mangled
+# link with no well-formed twin is kept, since it may be the only trace.
+EXTENSIONS = r"(?:aspx|html|htm|pdf|docx|doc|xlsx|xls|pptx|ppt)"
+# A second real extension is not a tail: .pdf.pdf and .html.pdf are files of
+# their own, with digests that differ from their single-extension namesakes.
+EXTENSION_TAIL = re.compile(rf"(\.{EXTENSIONS})(?![A-Za-z0-9])(?!\.{EXTENSIONS}$)[^/]+$")
+MARKUP_TAIL = re.compile(r"""[\[\]<>"&].*$|\.\*.*$|-\.\d+$""")
+
 
 # ---------------------------------------------------------------- sources
 
@@ -261,12 +272,21 @@ def canonical(url: str) -> str:
     return urllib.parse.unquote(key).rstrip("/").lower()
 
 
+def well_formed(key: str) -> str:
+    """The address a mangled key was meant to be; the key itself if it is not mangled."""
+    head, _, last = MARKUP_TAIL.sub("", key).rpartition("/")
+    last = EXTENSION_TAIL.sub(r"\1", last).rstrip(" -.:")
+    return f"{head}/{last}" if head else last
+
+
 def clean(source: dict, rows: list[dict]) -> list[dict]:
     """Raw rows to one record per file, earliest capture kept.
 
     A URL that carries a date outside the period is dropped; that is how a 2019
     influenza-vaccine order falls out of the keyword match. The prefix's own
-    index page is dropped too: it is a listing, not a document.
+    index page is dropped too: it is a listing, not a document. So is a
+    mangled link whose well-formed twin is present, or is that index page
+    (see MARKUP_TAIL).
     """
     base = canonical("https://" + source["prefix"])
     seen: dict[str, dict] = {}
@@ -281,6 +301,8 @@ def clean(source: dict, rows: list[dict]) -> list[dict]:
             continue
         if key not in seen or row["timestamp"] < seen[key]["timestamp"]:
             seen[key] = row
+    for key in [k for k in seen if well_formed(k) != k and (well_formed(k) in seen or well_formed(k) == base)]:
+        del seen[key]
     return [{"source": source["code"], "agency": source["agency"], "key": k,
              "url_day": url_day(r["original"]), **r} for k, r in sorted(seen.items())]
 
