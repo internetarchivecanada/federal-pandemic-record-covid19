@@ -1,0 +1,27 @@
+# One row per CDX query. Read by build/harvest.py; lines starting # are comments.
+#
+# mode      prefix = one matchType=prefix request; paged = walk CDX index pages, one cached file per page
+# filters   CDX filter= terms, separated by ;  (applied by the server, before collapse)
+# dated     yes = from=201912&to=202305 on the request; no = the host's captures start after the period
+#           (the archives.gov mirrors began in 2021), so the date has to come from the URL or a lookup
+# select    all = every row; keywords = only rows whose last path segment matches harvest.KEYWORDS
+# status    harvested / partial / retry come from the Cowork survey and run by default;
+#           queued and blocked run only when named with --source
+#
+# HANDOFF counts are what the Cowork survey reported (22-25 Oct 2026), kept to check the re-run against.
+code	agency	prefix	mode	filters	dated	select	status	handoff	note
+cdc-dl	CDC	www.cdc.gov/coronavirus/2019-ncov/downloads/	prefix	mimetype:application/pdf	yes	all	harvested	2550 rows
+ed	ED	www2.ed.gov/documents/coronavirus/	prefix	statuscode:200	yes	all	harvested	134 rows
+nih	NIH	files.covid19treatmentguidelines.nih.gov/	prefix	statuscode:200	yes	all	harvested	289 rows
+wht-actions	White House (Trump)	trumpwhitehouse.archives.gov/presidential-actions/	prefix	statuscode:200	no	keywords	harvested	1787 actions, 65 COVID	date each by first capture of www.whitehouse.gov/presidential-actions/<slug>/ (build/dates.py)
+wht-briefings	White House (Trump)	trumpwhitehouse.archives.gov/briefings-statements/	prefix	statuscode:200	no	keywords	harvested	195 COVID	date as above
+whb-actions	White House (Biden)	bidenwhitehouse.archives.gov/briefing-room/presidential-actions/	prefix	statuscode:200	no	keywords	harvested	1183 actions, 44 COVID, 42 in range	date is in the URL
+hhs-covid	HHS	www.hhs.gov/sites/default/files/covid	prefix	statuscode:200	yes	all	partial	97 rows	filename-prefix trick; the full folder needs paging
+hhs-coronavirus	HHS	www.hhs.gov/sites/default/files/coronavirus	prefix	statuscode:200	yes	all	retry		503 in the survey
+dhs-covid	DHS	www.dhs.gov/sites/default/files/publications/covid	prefix	statuscode:200	yes	all	partial	15 rows
+cisa-covid	CISA	www.cisa.gov/sites/default/files/publications/covid	prefix	statuscode:200	yes	all	partial	6 rows	essential-workforce guidance PDFs are not named covid*; see cisa.gov/identifying-critical-infrastructure-during-covid-19
+phe	HHS (ASPR)	www.phe.gov/emergency/news/healthactions/phe/	prefix	statuscode:200	yes	all	retry		failed twice on the network in the survey
+wh-uploads-trump	White House (Trump)	trumpwhitehouse.archives.gov/wp-content/uploads/	prefix	mimetype:application/pdf	no	keywords	queued		whitehouse.gov prefixes answer 503; try the mirror
+wh-uploads-biden	White House (Biden)	bidenwhitehouse.archives.gov/wp-content/uploads/	prefix	mimetype:application/pdf	no	keywords	queued
+cdc-ncov	CDC	www.cdc.gov/coronavirus/2019-ncov/	paged	mimetype:application/pdf	yes	all	queued	1767 pages	about 16 hours; run from a terminal under caffeinate -i
+hhs-files	HHS	www.hhs.gov/sites/default/files/	paged	mimetype:application/pdf	yes	keywords	queued	425 pages

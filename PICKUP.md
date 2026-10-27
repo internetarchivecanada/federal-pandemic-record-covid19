@@ -18,6 +18,24 @@ file it refers to.
   topic or against the corpus rule. Biden actions: 44 in range by slug keyword
   (the handoff had 42). Trump White House items are not in yet.
 - Archive-It partner 593 is corrected below.
+- **Step 3 is done.** `build/sources.tsv` holds the table below as data, and
+  `build/harvest.py` re-ran the 11 sources marked harvested, partial or retry
+  in about 3 minutes, 26 Oct 2026. Run it again with `python3 build/harvest.py`.
+  Raw rows match the survey exactly wherever it gave a count: CDC 2,550, ED
+  134, NIH 289, HHS `covid*` 97, DHS 15, CISA 6. CDC folds to exactly the
+  survey's 1,990 distinct files, and Trump actions give exactly 65 COVID.
+  PHE, which failed twice in the survey, returned 215 rows and 124 distinct
+  files. HHS `coronavirus*` returned 4. After cleaning: **2,824 records** in
+  `data/harvest.jsonl`. Differences, recorded but not resolved:
+  - ED keeps 29 of 134 rows: most are the same PDF with `utm_` query strings.
+  - Biden actions: 44, all dated in the URL from 20 Jan 2021 to 9 May 2023,
+    inside the period. The survey said 42 in range, without saying which cutoff
+    it used.
+  - Trump briefings: 208 against the survey's 195. The keyword list catches
+    false positives such as "reopening the Washington Monument", so the list
+    needs a read by hand either way.
+- Not run yet: the paged sources (`cdc-ncov`, `hhs-files`) and the `wp-content`
+  mirrors, which run only when named with `--source`.
 - Still open: whether HTML issuances (statements, press releases) belong in the
   corpus, and whether state material is in scope. The mockup assumes federal
   only and links Archive-It 15784 as a companion.
