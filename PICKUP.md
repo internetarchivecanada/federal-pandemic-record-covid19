@@ -64,6 +64,29 @@ file it refers to.
   added outside are Defense Production Act determinations first captured in
   July 2019; the one added inside is the Paycheck Protection Program remarks,
   29 Apr 2020.
+- **Step 5 is done: `build/languages.py`** folds CDC's translations
+  (26 Oct 2026). It follows the method in "Folding translations" below, made
+  precise against all 1,990 cdc-dl filenames: a two-to-four-letter code counts
+  only in the run of tags at the end of the name, so `my` in
+  `how_do_i_set_up_my_classroom` stays a word. **1,990 files → 1,270
+  documents, 303 with at least one language other than English**, against the
+  survey's 1,294 and 336. That gap is not reconciled: the survey's code is not
+  in the handoff. The rule here reads more spellings than the survey's list
+  did, among them `haitian-creole`, `ps`/`psaf`, `mand`, `maylay`, `amet`,
+  `cape-verdean-creole`, and Kurdish, Kunama, Serbian, Tamil, Telugu and
+  Yiddish, which the mockup's list lacked. Three facts worth knowing before using the numbers:
+  - **181 of the 303 have no English file under the same name.** 58 of them
+    have an untagged file of similar name in the same folder (difflib ratio
+    0.8 or more), e.g. `covid19_keepbabyhealthy-arabic` beside
+    `covid-19-keep-baby-healthy`. These are not merged: a fuzzy name is a
+    false-merge risk. They need a hand read or a matching pass of their own.
+  - 6 documents fold two English or untagged files that differ only by the
+    handoff's noise tokens (`-print`, `_final_508`, `-508`, `-final`).
+  - Two tokens are left unread on purpose, each in a single file: `_ch` and
+    `-fi-`. Others not folded by design: sizes (`11x17`), `updated`, `v4`,
+    trailing `-1`/`-2`.
+  Output: `data/documents.jsonl`, one row per document with its members;
+  non-CDC sources pass through one file per document.
 - Not run yet: the paged sources (`cdc-ncov`, `hhs-files`) and the `wp-content`
   mirrors, which run only when named with `--source`.
 - Still open: whether HTML issuances (statements, press releases) belong in the

@@ -6,3 +6,4 @@ data/harvest.jsonl
 data/*.log
 data/dates-cache.jsonl
 data/dates.jsonl
+data/documents.jsonl
