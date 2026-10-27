@@ -82,6 +82,31 @@ class Clean(unittest.TestCase):
                                 row("https://www.example.gov/files/budget.pdf")])
         self.assertEqual([r["key"] for r in out], ["example.gov/files/covid-guidance.pdf"])
 
+    def test_mangled_link_with_a_twin_is_dropped(self):
+        s = src(prefix="www.example.gov/actions/")
+        good = "https://www.example.gov/actions/proclamation-covid-19-outbreak/"
+        out = harvest.clean(s, [row(good),
+                                row("https://www.example.gov/actions/proclamation-covid-19-outbreak]/"),
+                                row("https://www.example.gov/actions/proclamation-covid-19-outbreak-.5/"),
+                                row("https://www.example.gov/actions/proclamation-covid-19-outbreak-"),
+                                row("https://www.example.gov/actions/page.aspx%20"),
+                                row("https://www.example.gov/actions/page.aspx&data=05|01|a@b.edu&reserved=0"),
+                                row("https://www.example.gov/actions/page.aspx"),
+                                row('https://www.example.gov/actions%22,%22contextTitle%22:%22X%22')])
+        self.assertEqual([r["key"] for r in out],
+                         ["example.gov/actions/page.aspx",
+                          "example.gov/actions/proclamation-covid-19-outbreak"])
+
+    def test_mangled_link_without_a_twin_is_kept(self):
+        out = harvest.clean(src(), [row("https://www.example.gov/files/only-trace.pdf%3E")])
+        self.assertEqual([r["key"] for r in out], ["example.gov/files/only-trace.pdf>"])
+
+    def test_second_real_extension_is_not_a_tail(self):
+        # Measured 26 Oct 2026: the cdc-dl .pdf.pdf and .pdf files differ in digest.
+        for k in ["example.gov/files/a.pdf.pdf", "example.gov/files/a.html.pdf",
+                  "example.gov/files/manual final_508.docx", "example.gov/files/data.xlsx"]:
+            self.assertEqual(harvest.well_formed(k), k)
+
 
 class Sources(unittest.TestCase):
     def test_sources_tsv_loads(self):
