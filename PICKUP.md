@@ -87,6 +87,18 @@ file it refers to.
     trailing `-1`/`-2`.
   Output: `data/documents.jsonl`, one row per document with its members;
   non-CDC sources pass through one file per document.
+- **The explorer is live** at
+  <https://internetarchivecanada.github.io/federal-pandemic-record-covid19/>
+  (27 Oct 2026), GitHub Pages from the root of `main`. `build/build_site.py`
+  writes `corpus.js` from `documents.jsonl`, `dates.jsonl` and
+  `pages-monthly.txt`; `corpus.js` is committed because Pages serves it.
+  The mockup and `build/mockup_data.py` are gone. **1,839 documents**: CDC
+  1,259, Trump White House 232, NIH 217, Biden White House 44, ED 29, HHS 28,
+  DHS 15, PHE declarations 9, CISA 6. Left out by the corpus rule: images,
+  stylesheets, scripts and XML in the file folders; 76 PHE HTML pages that
+  are not COVID declarations (other emergencies and list pages) plus 30 PHE
+  XML, JSON and image files; 37 Trump items first captured outside the period. PHE shows two April 2021 renewals
+  (`covid19-7april2021`, `covid-15april2021`), not yet checked.
 - Not run yet: the paged sources (`cdc-ncov`, `hhs-files`) and the `wp-content`
   mirrors, which run only when named with `--source`.
 - Still open: whether HTML issuances (statements, press releases) belong in the

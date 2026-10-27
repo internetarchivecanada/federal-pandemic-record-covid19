@@ -1,5 +1,9 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>The Federal Pandemic Record</title>
-<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="COVID-19 as the U.S. federal government told it on its own websites, December 2019 to May 2023, preserved by the Wayback Machine.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;800&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
@@ -31,20 +35,20 @@
   --placeholder-soft: #3d2120; color-scheme: dark }
 
 * { box-sizing: border-box }
-body { background: var(--bg); color: var(--ink); font: 15px/1.5 var(--body);
+html { padding-top: env(safe-area-inset-top, 0px); -webkit-text-size-adjust: 100% }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 var(--body);
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 48px }
 .wrap { max-width: 1080px; margin: 0 auto }
 a { color: var(--accent) }
 a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px }
 
-.mock { margin: 16px 0 0; padding: 8px 12px; border: 1px dashed var(--event); color: var(--event);
-  font: 500 12px/1.4 var(--mono); border-radius: 4px }
 header.mast { padding-block: 28px 8px }
 .eyebrow { font: 600 12px/1 var(--body); letter-spacing: .08em; text-transform: uppercase; color: var(--muted) }
 h1 { font: 800 clamp(28px, 5vw, 44px)/1.05 var(--display); margin: 8px 0 10px; letter-spacing: -.01em; text-wrap: balance }
 .lede { max-width: 64ch; color: var(--muted); margin: 0 }
 .lede b { color: var(--ink); font-weight: 600 }
+.stamp { margin: 10px 0 0; font: 12px var(--mono); color: var(--muted) }
 
 nav.tabs { display: flex; gap: 4px; flex-wrap: wrap; border-bottom: 1px solid var(--rule); margin-top: 24px;
   position: sticky; top: env(safe-area-inset-top, 0px); background: var(--bg); z-index: 5 }
@@ -123,11 +127,11 @@ code { font: 13px var(--mono); background: var(--accent-soft); padding: 1px 4px;
 </style>
 
 <div class="wrap">
-  <p class="mock">MOCKUP · built from a real sample: CDX harvested 26 Oct 2026 for CDC downloads, ED, NIH and Biden presidential actions. Other agencies, the Trump White House and the dates of events are not in yet.</p>
   <header class="mast">
     <div class="eyebrow">Internet Archive · Democracy's Library</div>
     <h1>The Federal Pandemic Record</h1>
     <p class="lede">COVID-19 as the U.S. federal government told it on its own websites, from <b>December 2019</b> to the end of the Public Health Emergency on <b>11 May 2023</b>, preserved by the Wayback Machine.</p>
+    <p class="stamp" id="stamp"></p>
   </header>
 
   <nav class="tabs" aria-label="Views">
@@ -171,15 +175,27 @@ code { font: 13px var(--mono); background: var(--accent-soft); padding: 1px 4px;
     <p>Most documents are dated by the first capture the Wayback Machine made, so they show as <i>by March 2020</i> and not as a day. Only a date in the URL or in the document itself gets a day. Biden White House actions carry theirs in the URL.</p>
     <h2>Moved pages turn into placeholders</h2>
     <p>When CDC moved a page, the old address kept answering 200 with a small redirect page, and the crawler kept capturing it. <code>cloth-face-cover.html</code> was 50–57 KB from April to June 2020 and about 1 KB from July. The explorer marks those months and points to the page that replaced it.</p>
-    <h2>What this mockup leaves out</h2>
-    <p>The translation folding here is a first pass. It finds <span id="ab-cdc"></span>, against 1,294 in the Cowork survey, and some titles still carry a language token. Trump White House items need dating by exact-URL lookups before they can go in. HHS, PHE, DHS, CISA, FEMA and the rest are queued. The NIH and ED rows are unfiltered PDFs and still need a pass for the COVID topic and the opens-as-a-document rule.</p>
+    <h2>Translations fold into one record</h2>
+    <p>CDC published many documents in dozens of languages, naming each translation by a suffix: <code>-sp</code>, <code>_ESP</code>, <code>_KO_HR_Korean</code>, <code>-cape-verdean-creole</code>. Each set is one record here, listed under its English file where there is one. <span id="ab-cdc"></span></p>
+    <h2>Trump White House dates come from the live site</h2>
+    <p>The Trump White House site was moved to <code>trumpwhitehouse.archives.gov</code> on 20 January 2021, so captures there say nothing about when an item was issued. Each item is dated by the first capture of the same address on <code>www.whitehouse.gov</code>, made while it was live. Items first seen before December 2019 are left out.</p>
+    <h2>Not in yet</h2>
+    <ul>
+      <li>CDC's main COVID folder and HHS's file library: both are large enough to need a harvest of many hours.</li>
+      <li>White House uploads (PDF attachments), FEMA, and other agencies.</li>
+      <li>Public health emergency renewals after October 2021.</li>
+      <li>Titles are made from file names and addresses; topics are not assigned yet.</li>
+      <li>White House items were chosen by keywords in their addresses and have not been read one by one.</li>
+      <li>The corpus rule has not yet been checked on a random sample of replays, so treat every count as a floor.</li>
+      <li>Event markers on the chart are draft dates, not yet verified.</li>
+    </ul>
   </section>
 </div>
 
-<script src="data.js"></script>
+<script src="corpus.js"></script>
 <script>
 (() => {
-const M = window.MOCK, D = M.docs;
+const M = window.CORPUS, D = M.docs;
 const MONTHS = []; for (let y = 2019, m = 12; y < 2023 || (y === 2023 && m <= 5); m++) { if (m > 12) { m = 1; y++ } if (y === 2023 && m > 5) break; MONTHS.push(`${y}-${String(m).padStart(2, "0")}`) }
 const MN = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 const fmtM = m => `${MN[+m.slice(5) - 1]} ${m.slice(0, 4)}`;
@@ -295,7 +311,8 @@ const CARDS = [
   ["U.S. Government Documents matching coronavirus or covid", "USGovernmentDocuments", "Keyword match inside the collection. Not yet read item by item.", 98],
   ["State Executive Actions Related to the COVID-19 Pandemic", "ArchiveIt-Collection-15784", "States rather than federal. A companion collection, linked but not in the corpus."]];
 document.getElementById("cards").innerHTML = CARDS.map(([t, id, note, n]) => `<div class="card">${n ? `<div class="big">${fmtN(n)}<span class="num"> items</span></div>` : ""}<h3><a href="https://archive.org/details/${id}" target="_blank" rel="noopener">${esc(t)}</a></h3><div class="id">${id}</div><p>${note}</p></div>`).join("");
-document.getElementById("ab-cdc").textContent = `${fmtN(M.stats.cdc_docs)} CDC documents from ${fmtN(M.stats.cdc_files)} files`;
+document.getElementById("ab-cdc").textContent = `${fmtN(M.stats.cdc_files)} CDC files fold into ${fmtN(M.stats.cdc_docs)} documents.`;
+document.getElementById("stamp").textContent = `${fmtN(D.length)} documents · Wayback index read ${M.stats.harvested}`;
 
 /* ---- views ---- */
 const VIEWS = ["documents", "pages", "archive", "about"];
