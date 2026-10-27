@@ -4,3 +4,5 @@ __pycache__/
 data/cdx-cache/
 data/harvest.jsonl
 data/*.log
+data/dates-cache.jsonl
+data/dates.jsonl
