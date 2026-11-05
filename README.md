@@ -19,7 +19,8 @@ Two views, both drawn from Wayback captures:
 ## Building
 
 GitHub Pages serves `index.html`, `app.js` and `corpus.js` from the root of `main`.
-`corpus.js` is built from the pipeline's outputs, which are not committed:
+`corpus.js` is built from the pipeline's outputs, which are not committed. The build waiting to run, with what to check, is in
+[NEXT-BUILD.md](NEXT-BUILD.md). The steps are:
 
 ```bash
 python3 build/harvest.py
